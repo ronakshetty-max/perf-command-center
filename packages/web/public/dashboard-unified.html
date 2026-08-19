@@ -1,0 +1,357 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Rize — Performance Command Center</title>
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+<style>
+:root{--bg:#0f1420;--p:#161c2e;--p2:#1d263b;--l:#2b3652;--t:#e7edf8;--m:#8d9ab8;--b:#6d9bff;--g:#38d39f;--a:#f5bd43;--r:#fa7777}*{box-sizing:border-box;margin:0}body{padding:20px 24px 30px;background:var(--bg);color:var(--t);font:13px -apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif}
+.header{display:flex;justify-content:space-between;align-items:center;margin-bottom:14px}.header h1{font-size:22px}.sub{color:var(--m);font-size:11px;margin-top:3px}
+.badge{background:var(--p);border:1px solid var(--l);border-radius:10px;padding:7px 12px;color:var(--m);font-size:11px}.badge b{color:var(--t)}
+.controls,.filters{background:var(--p);border:1px solid var(--l);border-radius:10px;display:flex;gap:10px;align-items:center;flex-wrap:wrap;padding:10px 14px;margin-bottom:12px}
+.controls label,.filters label{color:var(--m);font-size:11px;text-transform:uppercase;letter-spacing:.04em}
+.controls select,.filters select{background:var(--p2);color:var(--t);border:1px solid var(--l);border-radius:6px;padding:6px 10px;font-size:12px}
+.filters input[type=date]{background:var(--p2);color:var(--t);border:1px solid var(--l);border-radius:6px;padding:5px 8px;font-size:11px}
+.filters input[type=text]{background:var(--p2);color:var(--t);border:1px solid var(--l);border-radius:6px;padding:6px 10px;font-size:12px;width:180px}
+.btn{padding:5px 12px;border-radius:6px;border:none;font-size:11px;font-weight:600;cursor:pointer;transition:all .15s}
+.btn-active{background:var(--b);color:#fff}.btn-inactive{background:var(--p2);color:var(--m);border:1px solid var(--l)}
+.btn-inactive:hover{border-color:var(--b);color:var(--t)}
+.kpis{display:grid;grid-template-columns:repeat(5,1fr);gap:10px;margin-bottom:14px}
+.card{background:var(--p);border:1px solid var(--l);border-radius:10px;padding:14px}
+.card .label{font-size:10px;color:var(--m);text-transform:uppercase;letter-spacing:.04em}
+.card .value{font-size:22px;font-weight:700;margin-top:5px}
+.card .delta{font-size:11px;margin-top:4px;color:var(--g)}
+.grid{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:12px}.full{grid-template-columns:1fr}
+.panel{background:var(--p);border:1px solid var(--l);border-radius:10px;padding:14px}
+.panel h2{font-size:13px;margin-bottom:10px;display:flex;justify-content:space-between;align-items:center}
+.panel .meta{font-size:10px;color:var(--m)}
+.chart{height:260px}
+.table-wrap{overflow-x:auto}table{width:100%;border-collapse:collapse;font-size:11px}
+th,td{padding:7px 8px;border-bottom:1px solid var(--l);text-align:right;white-space:nowrap}
+th{color:var(--m);font-size:9px;text-transform:uppercase}td:first-child,th:first-child{text-align:left}
+tr:hover td{background:var(--p2)}
+.voice-dock{position:fixed;bottom:0;left:0;right:0;background:var(--p);border-top:1px solid var(--l);padding:12px 24px;display:flex;align-items:center;gap:14px;z-index:100}
+.mic-btn{width:44px;height:44px;border-radius:50%;border:none;background:linear-gradient(135deg,#2f6d5c,#5fae94);color:#fff;font-size:18px;cursor:pointer;flex-shrink:0;transition:all .15s}
+.mic-btn.recording{box-shadow:0 0 0 8px rgba(47,109,92,.3);transform:scale(1.08)}
+.voice-input{flex:1;display:flex;gap:8px}
+.voice-input input{flex:1;padding:9px 12px;border-radius:8px;border:1px solid var(--l);background:var(--p2);color:var(--t);font-size:12px}
+.voice-input button{padding:9px 16px;border-radius:8px;border:none;background:var(--b);color:#fff;font-size:12px;font-weight:600;cursor:pointer}
+#marviz-response{font-size:11px;color:var(--m);max-height:40px;overflow-y:auto;min-width:200px;max-width:400px}
+#marviz-status{font-size:10px;min-width:70px;text-align:right}
+.note{border-left:3px solid var(--b);background:var(--p2);padding:8px 10px;font-size:11px;color:#cbd5e1;margin-top:10px;border-radius:0 6px 6px 0}
+.quick-q{padding:4px 9px;border-radius:6px;border:1px solid var(--l);background:var(--p2);color:var(--m);font-size:10px;cursor:pointer;transition:all .15s}
+.quick-q:hover{border-color:var(--b);color:var(--t)}
+.chat-bubble{padding:8px 11px;border-radius:10px;font-size:12px;line-height:1.4;max-width:90%;word-wrap:break-word}
+.chat-you{align-self:flex-end;background:var(--b);color:#fff;border-radius:10px 10px 3px 10px}
+.chat-ai{align-self:flex-start;background:var(--p2);color:var(--t);border-radius:10px 10px 10px 3px}
+.chat-thinking{align-self:flex-start;color:var(--m);font-style:italic;font-size:11px}
+.marviz-open{transform:translateX(0)!important}
+body.panel-open{padding-left:340px}
+@media(max-width:900px){.grid{grid-template-columns:1fr}.kpis{grid-template-columns:repeat(2,1fr)}}
+@media(max-width:560px){.kpis{grid-template-columns:1fr}}
+</style></head><body>
+
+<div class="header">
+  <div><h1>Rize — Performance Command Center</h1><p class="sub">Google Ads + Meta Ads + DataGaaru Backend · AI Voice Agent</p></div>
+  <div class="badge"><span id="live-badge" style="color:#38d39f">● LIVE</span> <b>Rize Incorporation</b></div>
+</div>
+
+<!-- Filters row -->
+<div class="filters">
+  <label>Source</label>
+  <button class="btn btn-active" id="src-all" onclick="setSource('all')">All</button>
+  <button class="btn btn-inactive" id="src-google" onclick="setSource('google')">Google Ads</button>
+  <button class="btn btn-inactive" id="src-meta" onclick="setSource('meta')">Meta</button>
+  <div style="width:1px;height:24px;background:var(--l);margin:0 6px"></div>
+  <label>Period</label>
+  <button class="btn btn-inactive period-btn" id="btn-7" onclick="setPeriod(7)">7D</button>
+  <button class="btn btn-active period-btn" id="btn-14" onclick="setPeriod(14)">14D</button>
+  <button class="btn btn-inactive period-btn" id="btn-30" onclick="setPeriod(30)">30D</button>
+  <button class="btn btn-inactive period-btn" id="btn-mtd" onclick="setPeriod('mtd')">MTD</button>
+  <input type="date" id="dateFrom" onchange="applyCustomDates()">
+  <input type="date" id="dateTo" onchange="applyCustomDates()">
+  <div style="width:1px;height:24px;background:var(--l);margin:0 6px"></div>
+  <label>Search</label>
+  <input type="text" id="campSearch" placeholder="Filter campaigns..." oninput="build()">
+</div>
+
+<!-- Role/View selector -->
+<div class="controls">
+  <label>View</label>
+  <select id="role" onchange="build()"><option value="internal">Internal / Marketing Ops</option><option value="manager">Manager</option><option value="leadership">Leadership</option></select>
+  <label>Display</label>
+  <select id="repr" onchange="build()"><option value="graphic">Graphic</option><option value="table">Table</option></select>
+  <span id="viewText" class="sub" style="margin-left:8px">Detailed channel, campaign, and creative diagnostics</span>
+</div>
+
+<div id="app"><div style="text-align:center;padding:60px;color:var(--m)">Loading live data...</div></div>
+
+<!-- Marviz Left Panel -->
+<div id="marviz-panel" style="position:fixed;top:0;left:0;width:320px;height:100vh;background:var(--p);border-right:1px solid var(--l);display:flex;flex-direction:column;z-index:200;transform:translateX(-320px);transition:transform .25s ease">
+  <div style="padding:14px 16px;border-bottom:1px solid var(--l);display:flex;align-items:center;justify-content:space-between">
+    <div style="display:flex;align-items:center;gap:8px"><span style="width:28px;height:28px;border-radius:8px;background:linear-gradient(135deg,#2f6d5c,#5fae94);display:flex;align-items:center;justify-content:center;color:#fff;font-size:13px;font-weight:700">M</span><span style="font-weight:700;font-size:13px">Marviz AI</span></div>
+    <div style="display:flex;align-items:center;gap:8px"><span id="marviz-status" style="font-size:10px;color:var(--m)">connecting...</span><button onclick="toggleMarviz()" style="background:none;border:none;color:var(--m);font-size:18px;cursor:pointer">✕</button></div>
+  </div>
+  <div id="marviz-chat" style="flex:1;overflow-y:auto;padding:12px;display:flex;flex-direction:column;gap:8px"></div>
+  <div style="padding:12px;border-top:1px solid var(--l);display:flex;flex-direction:column;gap:8px">
+    <div style="display:flex;gap:8px">
+      <button class="mic-btn" id="micBtn" title="Hold to talk" style="width:38px;height:38px;font-size:16px">🎤</button>
+      <input id="textInput" type="text" placeholder="Ask about spend, ROAS, campaigns..." style="flex:1;padding:9px 12px;border-radius:8px;border:1px solid var(--l);background:var(--p2);color:var(--t);font-size:12px" />
+      <button id="sendBtn" style="padding:9px 14px;border-radius:8px;border:none;background:var(--b);color:#fff;font-size:12px;font-weight:600;cursor:pointer">Send</button>
+    </div>
+    <div style="display:flex;gap:6px;flex-wrap:wrap">
+      <button class="quick-q" onclick="askQuick('How much did we spend this week?')">💰 Spend</button>
+      <button class="quick-q" onclick="askQuick('What is our ROAS by platform?')">📊 ROAS</button>
+      <button class="quick-q" onclick="askQuick('Show top campaigns')">🏆 Top</button>
+      <button class="quick-q" onclick="askQuick('Compare Google vs Meta CPP')">⚡ Compare</button>
+    </div>
+  </div>
+</div>
+<!-- Marviz toggle button (always visible) -->
+<button id="marviz-toggle" onclick="toggleMarviz()" style="position:fixed;bottom:20px;left:20px;width:52px;height:52px;border-radius:50%;border:none;background:linear-gradient(135deg,#2f6d5c,#5fae94);color:#fff;font-size:22px;cursor:pointer;z-index:199;box-shadow:0 4px 20px rgba(47,109,92,.4);transition:all .2s">🎤</button>
+
+<script>
+let DATA=null,ch={},currentSource='all',dateFrom='',dateTo='';
+const money=n=>{if(!n||isNaN(n))return'—';if(n>=10000000)return'₹'+(n/10000000).toFixed(2)+'Cr';if(n>=100000)return'₹'+(n/100000).toFixed(2)+'L';if(n>=1000)return'₹'+(n/1000).toFixed(1)+'K';return'₹'+Math.round(n)};
+const pct=n=>(!n||isNaN(n))?'—':(n*100).toFixed(1)+'%';
+
+function setSource(s){
+  currentSource=s;
+  document.querySelectorAll('[id^=src-]').forEach(b=>{b.className='btn btn-inactive'});
+  document.getElementById('src-'+s).className='btn btn-active';
+  loadData();
+}
+function setPeriod(d){
+  const today=new Date();today.setDate(today.getDate()-1);
+  if(d==='mtd'){
+    dateFrom=new Date(today.getFullYear(),today.getMonth(),1).toISOString().split('T')[0];
+    dateTo=today.toISOString().split('T')[0];
+  } else {
+    dateTo=today.toISOString().split('T')[0];
+    const from=new Date(today);from.setDate(from.getDate()-d+1);
+    dateFrom=from.toISOString().split('T')[0];
+  }
+  document.getElementById('dateFrom').value=dateFrom;
+  document.getElementById('dateTo').value=dateTo;
+  // Update active button styling
+  document.querySelectorAll('.period-btn').forEach(b=>{b.className='btn btn-inactive period-btn'});
+  const activeBtn=document.getElementById('btn-'+d);
+  if(activeBtn)activeBtn.className='btn btn-active period-btn';
+  loadData();
+}
+function applyCustomDates(){
+  dateFrom=document.getElementById('dateFrom').value;
+  dateTo=document.getElementById('dateTo').value;
+  if(dateFrom&&dateTo)loadData();
+}
+
+async function loadData(){
+  document.getElementById('app').innerHTML='<div style="text-align:center;padding:40px;color:var(--m)">Loading data...</div>';
+  const params=dateFrom?`&dateFrom=${dateFrom}&dateTo=${dateTo}`:'';
+  let metaRes=null,googleRes=null;
+
+  try{
+    if(currentSource==='all'||currentSource==='meta'){
+      metaRes=await fetch(`/api/meta?action=overall&product=rize${params}`).then(r=>r.json()).catch(e=>{console.error('Meta API:',e);return null});
+    }
+    if(currentSource==='all'||currentSource==='google'){
+      googleRes=await fetch(`/api/metrics?view=overall&business=rize&product=rize${params}`).then(r=>r.json()).catch(e=>{console.error('Google API:',e);return null});
+    }
+  }catch(e){document.getElementById('app').innerHTML='<div style="text-align:center;padding:40px;color:var(--r)">API Error: '+e.message+'</div>';return}
+
+  const gS=googleRes?.summary||{},mS=metaRes?.summary||{};
+  const googleSpend=parseFloat(gS.total_spend)||0,metaSpend=mS.total_spend||0;
+  const googleLeads=parseInt(gS.total_leads)||0,metaLeads=mS.total_leads||0;
+  const googlePay=parseInt(gS.total_payments)||0,metaPay=mS.total_conversions||0;
+  const googleImpr=parseInt(gS.total_impressions)||0,metaImpr=mS.total_impressions||0;
+  const googleClicks=parseInt(gS.total_clicks)||0,metaClicks=mS.total_clicks||0;
+  const totalSpend=googleSpend+metaSpend,totalLeads=googleLeads+metaLeads,totalPay=googlePay+metaPay;
+  const totalImpr=googleImpr+metaImpr,totalClicks=googleClicks+metaClicks;
+
+  const platforms={Search:{s:0,l:0,p:0,i:0,c:0},Meta:{s:metaSpend,l:metaLeads,p:metaPay,i:metaImpr,c:metaClicks},Pmax:{s:0,l:0,p:0,i:0,c:0}};
+  for(const c of(googleRes?.campaigns||[])){
+    const plat=(c.platform||'').toLowerCase().includes('pmax')?'Pmax':'Search';
+    platforms[plat].s+=parseFloat(c.spend||'0');
+    platforms[plat].l+=parseInt(c.leads||'0');
+    platforms[plat].p+=parseInt(c.payments||'0');
+    platforms[plat].i+=parseInt(c.impressions||'0');
+    platforms[plat].c+=parseInt(c.clicks||'0');
+  }
+
+  const allCampaigns=[
+    ...(googleRes?.campaigns||[]).map(c=>({...c,source:'Google',spend:parseFloat(c.spend||'0'),leads:parseInt(c.leads||'0'),payments:parseInt(c.payments||'0')})),
+    ...(metaRes?.campaigns||[]).map(c=>({...c,source:'Meta',spend:c.spend||0,leads:c.leads||0,payments:c.conversions||0}))
+  ].sort((a,b)=>b.spend-a.spend);
+
+  DATA={totalSpend,totalLeads,totalPay,totalImpr,totalClicks,
+    cac:totalPay>0?totalSpend/totalPay:0,
+    l2p:totalLeads>0?(totalPay/totalLeads)*100:0,
+    cpl:totalLeads>0?totalSpend/totalLeads:0,
+    ctr:totalImpr>0?totalClicks/totalImpr:0,
+    platforms,campaigns:allCampaigns,
+    googleSpend,metaSpend,googleLeads,metaLeads,googlePay,metaPay
+  };
+  build();
+}
+
+function clean(){Object.values(ch).forEach(x=>x&&x.destroy());ch={}}
+function T(h,rows){return'<div class="table-wrap"><table><thead><tr>'+h.map(x=>'<th>'+x+'</th>').join('')+'</tr></thead><tbody>'+rows.map(r=>'<tr>'+r.map(x=>'<td>'+x+'</td>').join('')+'</tr>').join('')+'</tbody></table></div>'}
+function isTableMode(){return document.getElementById('repr').value==='table'}
+function mk(id,type,labels,sets,opt={}){
+  if(isTableMode()){
+    const el=document.getElementById(id);if(!el)return;
+    const parent=el.parentElement;
+    let heads=[''],rows=labels.map((l,i)=>[l]);
+    sets.forEach(s=>{heads.push(s.label||'');rows.forEach((r,i)=>r.push(typeof s.data[i]==='number'?s.data[i].toFixed(1):s.data[i]))});
+    parent.innerHTML=T(heads,rows);return;
+  }
+  const el=document.getElementById(id);if(!el)return;
+  ch[id]=new Chart(el,{type,data:{labels,datasets:sets},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{labels:{color:'#8d9ab8',boxWidth:10,font:{size:10}}}},scales:type==='doughnut'?{}:{x:{ticks:{color:'#6b7085',font:{size:9}},grid:{color:'rgba(255,255,255,.04)'}},y:{ticks:{color:'#6b7085',font:{size:9}},grid:{color:'rgba(255,255,255,.04)'}}},...opt}})
+}
+
+function KP(){
+  if(!DATA)return'';
+  return'<div class="kpis">'+
+    `<div class="card"><div class="label">Total Spend</div><div class="value">${money(DATA.totalSpend)}</div><div class="delta">Google ${money(DATA.googleSpend)} · Meta ${money(DATA.metaSpend)}</div></div>`+
+    `<div class="card"><div class="label">Leads</div><div class="value">${DATA.totalLeads.toLocaleString()}</div><div class="delta">Backend verified (DataGaaru)</div></div>`+
+    `<div class="card"><div class="label">Payments</div><div class="value">${DATA.totalPay.toLocaleString()}</div><div class="delta">Ground truth conversions</div></div>`+
+    `<div class="card"><div class="label">CAC (CPP)</div><div class="value">${money(DATA.cac)}</div><div class="delta">Cost per Payment</div></div>`+
+    `<div class="card"><div class="label">Lead → Payment</div><div class="value">${DATA.l2p.toFixed(1)}%</div><div class="delta">Conversion rate</div></div>`+
+  '</div>';
+}
+
+function platformTable(){
+  const P=DATA.platforms;
+  return T(['Platform','Spend','Leads','Payments','CPL','CPP','L→P %','Share'],
+    Object.entries(P).map(([n,x])=>[n,money(x.s),x.l,x.p,x.l>0?money(x.s/x.l):'—',x.p>0?money(x.s/x.p):'—',x.l>0?((x.p/x.l)*100).toFixed(1)+'%':'—',DATA.totalSpend>0?((x.s/DATA.totalSpend)*100).toFixed(1)+'%':'—']))
+}
+
+function campTable(limit){
+  const search=(document.getElementById('campSearch')?.value||'').toLowerCase();
+  const filtered=DATA.campaigns.filter(c=>!search||c.campaign_name?.toLowerCase().includes(search));
+  return T(['Campaign','Source','Spend','Leads','Payments','CPP','L→P','Share'],
+    filtered.slice(0,limit).map(c=>[
+      (c.campaign_name||'').slice(0,50),c.source||'—',money(c.spend),c.leads,c.payments,
+      c.payments>0?money(c.spend/c.payments):'—',
+      c.leads>0?((c.payments/c.leads)*100).toFixed(1)+'%':'—',
+      DATA.totalSpend>0?((c.spend/DATA.totalSpend)*100).toFixed(1)+'%':'—'
+    ]))
+}
+
+function internal(){return KP()+'<div class="grid"><div class="panel"><h2>Platform Performance <span class="meta">Spend · Leads · Payments · CPP</span></h2><div class="chart"><canvas id="pp"></canvas></div>'+platformTable()+'</div><div class="panel"><h2>Cost Metrics by Platform <span class="meta">CPC · CPL · CPP</span></h2><div class="chart"><canvas id="cm"></canvas></div></div></div><div class="grid full"><div class="panel"><h2>Campaign Performance <span class="meta">'+DATA.campaigns.length+' campaigns</span></h2>'+campTable(20)+'</div></div>'}
+
+function manager(){return KP()+'<div class="grid"><div class="panel"><h2>Spend vs Payments vs CAC</h2><div class="chart"><canvas id="mm"></canvas></div></div><div class="panel"><h2>Platform Mix <span class="meta">spend allocation</span></h2><div class="chart"><canvas id="mx"></canvas></div></div></div><div class="grid full"><div class="panel"><h2>Platform Breakdown</h2><div class="chart"><canvas id="mp"></canvas></div>'+platformTable()+'</div></div><div class="grid full"><div class="panel"><h2>Top Campaigns</h2>'+campTable(10)+'</div></div>'}
+
+function leadership(){return KP()+'<div class="grid"><div class="panel"><h2>Overall — Spend vs Payments</h2><div class="chart"><canvas id="lm"></canvas></div></div><div class="panel"><h2>Channel Allocation</h2><div class="chart"><canvas id="lx"></canvas></div></div></div><div class="grid full"><div class="panel"><h2>Platform Performance Summary</h2><div class="chart"><canvas id="lp"></canvas></div>'+platformTable()+'<div class="note">Executive view: outcomes, payment sources, and allocation. Data from Google Ads API + Meta Marketing API + DataGaaru backend.</div></div></div>'}
+
+function build(){
+  if(!DATA)return;
+  clean();
+  const r=document.getElementById('role').value;
+  document.getElementById('viewText').textContent=r==='internal'?'Detailed channel, campaign, and creative diagnostics':r==='manager'?'Management view: CAC, mix, channels, and top campaigns':'Executive view: outcomes, payment sources, and allocation';
+  document.getElementById('app').innerHTML=r==='internal'?internal():r==='manager'?manager():leadership();
+
+  const P=DATA.platforms,pNames=Object.keys(P);
+  if(r==='internal'){
+    mk('pp','bar',pNames,[{label:'Spend (₹L)',data:pNames.map(n=>P[n].s/100000),backgroundColor:'#3f86f5'},{label:'Leads',data:pNames.map(n=>P[n].l),backgroundColor:'#22c55e'},{label:'Payments',data:pNames.map(n=>P[n].p),backgroundColor:'#f5a400'},{label:'CPP (₹K)',data:pNames.map(n=>P[n].p>0?P[n].s/P[n].p/1000:0),backgroundColor:'#ef4444'}]);
+    mk('cm','bar',pNames,[{label:'CPC',data:pNames.map(n=>P[n].c>0?P[n].s/P[n].c:0),backgroundColor:'#35d7e8'},{label:'CPL',data:pNames.map(n=>P[n].l>0?P[n].s/P[n].l:0),backgroundColor:'#f5bd43'},{label:'CPP',data:pNames.map(n=>P[n].p>0?P[n].s/P[n].p:0),backgroundColor:'#fa7777'}]);
+  }
+  if(r==='manager'){
+    mk('mm','bar',pNames,[{label:'Spend (₹L)',data:pNames.map(n=>P[n].s/100000),backgroundColor:'#6d9bff'},{label:'Payments',data:pNames.map(n=>P[n].p),backgroundColor:'#38d39f'},{type:'line',label:'CAC (₹K)',data:pNames.map(n=>P[n].p>0?P[n].s/P[n].p/1000:0),borderColor:'#fa7777'}]);
+    mk('mx','doughnut',pNames,[{data:pNames.map(n=>P[n].s),backgroundColor:['#3f86f5','#ad8cff','#22d3ee']}],{plugins:{legend:{position:'right'}}});
+    mk('mp','bar',pNames,[{label:'Spend (₹L)',data:pNames.map(n=>P[n].s/100000),backgroundColor:'#3f86f5'},{label:'Leads',data:pNames.map(n=>P[n].l),backgroundColor:'#22c55e'},{label:'Payments',data:pNames.map(n=>P[n].p),backgroundColor:'#f5a400'},{label:'CPP (₹K)',data:pNames.map(n=>P[n].p>0?P[n].s/P[n].p/1000:0),backgroundColor:'#ef4444'}]);
+  }
+  if(r==='leadership'){
+    mk('lm','bar',pNames,[{label:'Spend (₹L)',data:pNames.map(n=>P[n].s/100000),backgroundColor:'#6d9bff'},{label:'Payments',data:pNames.map(n=>P[n].p),backgroundColor:'#38d39f'}]);
+    mk('lx','doughnut',pNames,[{data:pNames.map(n=>P[n].s),backgroundColor:['#3f86f5','#ad8cff','#22d3ee']}],{plugins:{legend:{position:'right'}}});
+    mk('lp','bar',pNames,[{label:'Spend (₹L)',data:pNames.map(n=>P[n].s/100000),backgroundColor:'#3f86f5'},{label:'Leads',data:pNames.map(n=>P[n].l),backgroundColor:'#22c55e'},{label:'Payments',data:pNames.map(n=>P[n].p),backgroundColor:'#f5a400'},{label:'CPP (₹K)',data:pNames.map(n=>P[n].p>0?P[n].s/P[n].p/1000:0),backgroundColor:'#ef4444'}]);
+  }
+}
+
+// Initialize with 14D - wait for DOM + Chart.js
+if(document.readyState==='loading'){document.addEventListener('DOMContentLoaded',()=>setPeriod(14))}else{setTimeout(()=>setPeriod(14),100)}
+
+// --- Marviz Panel + Voice Agent ---
+let marvizOpen=false;
+function toggleMarviz(){
+  marvizOpen=!marvizOpen;
+  document.getElementById('marviz-panel').classList.toggle('marviz-open',marvizOpen);
+  document.body.classList.toggle('panel-open',marvizOpen);
+  document.getElementById('marviz-toggle').style.display=marvizOpen?'none':'block';
+}
+function addChat(who,text){
+  const chat=document.getElementById('marviz-chat');
+  const div=document.createElement('div');
+  div.className='chat-bubble '+(who==='you'?'chat-you':'chat-ai');
+  div.textContent=text;
+  chat.appendChild(div);
+  chat.scrollTop=chat.scrollHeight;
+  return div;
+}
+function askQuick(text){document.getElementById('textInput').value='';sendMarvizText(text)}
+
+(function(){
+  const params=new URLSearchParams(location.search);
+  const marvizHost=params.get('marviz')||localStorage.getItem('marviz_url')||null;
+  const MARVIZ_WS=marvizHost?marvizHost.replace('https://','wss://').replace('http://','ws://')+'/ws/marviz':`ws://localhost:8000/ws/marviz`;
+  if(marvizHost)localStorage.setItem('marviz_url',marvizHost);
+
+  const statusEl=document.getElementById('marviz-status');
+  const textInput=document.getElementById('textInput');
+  const sendBtn=document.getElementById('sendBtn');
+  const micBtn=document.getElementById('micBtn');
+  let ws=null,mediaRecorder=null,audioChunks=[],isRecording=false,pendingBubble=null;
+
+  function connect(){
+    try{
+      ws=new WebSocket(MARVIZ_WS);
+      ws.onopen=()=>{statusEl.textContent='● connected';statusEl.style.color='#38d39f'};
+      ws.onerror=()=>{statusEl.textContent='● offline';statusEl.style.color='#fa7777'};
+      ws.onclose=()=>{statusEl.textContent='● disconnected';statusEl.style.color='#f5bd43'};
+      ws.onmessage=(e)=>{
+        const d=JSON.parse(e.data);
+        if(d.type==='text_chunk'){
+          if(!pendingBubble)pendingBubble=addChat('ai','');
+          if(pendingBubble.className.includes('thinking')){pendingBubble.className='chat-bubble chat-ai';pendingBubble.textContent=''}
+          pendingBubble.textContent+=d.text;
+          document.getElementById('marviz-chat').scrollTop=99999;
+          return;
+        }
+        if(d.transcript&&!pendingBubble)addChat('you',d.transcript);
+        if(d.text_response){
+          if(pendingBubble){pendingBubble.className='chat-bubble chat-ai';pendingBubble.textContent=d.text_response}else{addChat('ai',d.text_response)}
+          pendingBubble=null;
+          if(window.speechSynthesis)window.speechSynthesis.speak(new SpeechSynthesisUtterance(d.text_response));
+        }
+        if(d.dashboard_payload)loadData();
+      };
+    }catch(e){statusEl.textContent='● no agent';statusEl.style.color='var(--m)'}
+  }
+
+  window.sendMarvizText=function(text){
+    if(!text)return;
+    addChat('you',text);
+    if(!ws||ws.readyState!==WebSocket.OPEN){addChat('ai','Not connected. Start Marviz: uvicorn app:app --port 8000');return}
+    pendingBubble=addChat('ai','Thinking...');
+    pendingBubble.className='chat-bubble chat-thinking';
+    ws.send(JSON.stringify({type:'text',text}));
+    if(!marvizOpen)toggleMarviz();
+  }
+
+  sendBtn.addEventListener('click',()=>{sendMarvizText(textInput.value.trim());textInput.value=''});
+  textInput.addEventListener('keydown',(e)=>{if(e.key==='Enter'){sendMarvizText(textInput.value.trim());textInput.value=''}});
+
+  micBtn.addEventListener('mousedown',async()=>{
+    if(isRecording)return;isRecording=true;
+    micBtn.style.boxShadow='0 0 0 6px rgba(47,109,92,.3)';micBtn.style.transform='scale(1.08)';
+    statusEl.textContent='● listening...';
+    if(!marvizOpen)toggleMarviz();
+    const stream=await navigator.mediaDevices.getUserMedia({audio:true});
+    mediaRecorder=new MediaRecorder(stream,{mimeType:'audio/webm'});audioChunks=[];
+    mediaRecorder.ondataavailable=(e)=>{if(e.data.size>0)audioChunks.push(e.data)};
+    mediaRecorder.onstop=()=>{const blob=new Blob(audioChunks,{type:'audio/webm'});if(ws&&ws.readyState===WebSocket.OPEN){ws.send(blob);pendingBubble=addChat('ai','Transcribing...');pendingBubble.className='chat-bubble chat-thinking'}stream.getTracks().forEach(t=>t.stop())};
+    mediaRecorder.start();
+  });
+  function stopMic(){if(!isRecording)return;isRecording=false;micBtn.style.boxShadow='none';micBtn.style.transform='scale(1)';statusEl.textContent='● connected';if(mediaRecorder&&mediaRecorder.state!=='inactive')mediaRecorder.stop()}
+  micBtn.addEventListener('mouseup',stopMic);
+  micBtn.addEventListener('mouseleave',stopMic);
+  connect();
+})();
+</script></body></html>
