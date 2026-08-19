@@ -1,0 +1,12 @@
+{
+  "mcpServers": {
+    "meta-ads": {
+      "command": "node",
+      "args": ["./packages/meta-ads-mcp/dist/index.js"],
+      "env": {
+        "META_ADS_ACCESS_TOKEN": "${META_ADS_ACCESS_TOKEN}",
+        "META_ADS_ENABLE_WRITE_TOOLS": "true"
+      }
+    }
+  }
+}

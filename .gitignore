@@ -1,0 +1,17 @@
+node_modules/
+.next/
+__pycache__/
+*.pyc
+.env
+.env.local
+.signals_cache.json
+venv/
+.DS_Store
+node_modules/
+.next/
+.env.local
+packages/web/.env.local
+__pycache__/
+*.pyc
+.venv/
+.mcp.json

@@ -1,0 +1,24 @@
+﻿Performance Command Center
+1. Problem Statement
+Today, Razorpay's performance marketing team operates with fragmented data across multiple platforms (Google Ads, Meta Ads, LinkedIn) and internal backend systems (Tableau, internal dashboards). To optimize campaigns, the team manually stitches data from marketing platform dashboards and backend analytics into Google Sheets — a slow, error-prone, and reactive process.
+There is no single, unified view where a team member can quickly assess campaign performance, spot trends, identify opportunities, and take action.
+2. Proposed Solution: Performance Command Center
+The Performance Command Center is a unified, AI-powered dashboard designed to streamline marketing performance management and drive data-backed actions.
+* Data Aggregation: Consolidates data from ad platforms (Google Ads, Meta Ads) and internal backend systems (Domestic PG, RazorpayX Payroll, Leads) into a single operational view.
+* Intelligent Insights: An AI/LLM layer (powered by Claude) analyzes ~6 months of historical performance data to automatically surface trends, anomalies, and optimization opportunities.
+* Actionable Recommendations: Provides contextual, performance-based suggestions (e.g., "Increase bid on campaign X," "Add new creative variants," "Reallocate budget from Y to Z").
+* Agentic Execution: Allows single-click action ("Yes, go ahead") to push recommended changes directly to ad platforms via API without manual effort.
+* Voice Interaction: Features a voice-activated interface supporting natural language queries (e.g., "Give me overall performance of RazorpayX for the last 6 months").
+* Dynamic & Role-Based Views: Generates customized perspectives tailored to user roles (marketing, Google Ads specialists, leadership), focusing on target vs. achieved, channel breakdowns, and MTD comparisons.
+3. Current State
+* Working Prototype: A local dashboard prototype is operational, presenting data from a single Google Ads account (cross-border campaigns).
+* Product Data: Metrics for Domestic PG, RazorpayX, and Collective products are visible.
+* Time Filtering: Partial implementation of time range filters (6 months, 3 months, MTD, yesterday vs. today).
+* Meta Integration: Meta Ads integration is currently pending.
+* Hosting & Backend: The application runs locally and requires deployment to cloud infrastructure (AISites + database backend).
+4. Key Technical Decisions Needed
+* Demo Scope: Determine whether to restrict the demo scope to RazorpayX (Payments + Leads) for cleanest data pipelines or include all three products.
+* Channel Expansion: Decide whether to launch with Google Ads only or integrate Meta Ads upfront.
+* Hosting & Storage: Finalize deployment strategy via AISites backed by a dedicated data store (KBase) for historical analytics.
+* LLM Architecture: Confirm Claude integration for intelligence and select/integrate a voice model for natural language queries.
+* Agentic Workflow Security: Establish secure API integration protocols for executing one-click campaign adjustments directly on external ad platforms.
