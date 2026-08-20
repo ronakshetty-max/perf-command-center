@@ -25,7 +25,8 @@ export async function POST(req: NextRequest) {
 Google Ads: Spend ₹${(parseFloat(gS.total_spend) || 0).toFixed(0)}, Leads ${gS.total_leads || 0}, Payments ${gS.total_payments || 0}
 Meta Ads: Spend ₹${(mS.total_spend || 0).toFixed(0)}, Leads ${mS.total_leads || 0}, Payments ${mS.total_conversions || 0}
 Total: Spend ₹${((parseFloat(gS.total_spend) || 0) + (mS.total_spend || 0)).toFixed(0)}, Leads ${(parseInt(gS.total_leads) || 0) + (mS.total_leads || 0)}, Payments ${(parseInt(gS.total_payments) || 0) + (mS.total_conversions || 0)}
-Rize Targets: CPP ₹2,700 | CPL ₹400 | L2P 15%
+Rize AOP Targets (Aug 2026): Budget ₹18.78L | Payments Target 686 | Leads 6,051 | CPP ₹2,738 | CPL ₹310 | L2P 11.3%
+Unit Economics: Revenue ₹1,499/payment + Cross-sell LTV ₹15K = Total LTV ₹16.5K
 Campaigns: ${JSON.stringify(camps)}`;
   } catch (e) {
     dataContext = "Use realistic sample data for Rize performance marketing (INR currency).";
