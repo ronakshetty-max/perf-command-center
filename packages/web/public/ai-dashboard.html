@@ -92,9 +92,88 @@ tr:hover td{background:var(--p2)}
 let charts=[];
 const $=id=>document.getElementById(id);
 
+// Pre-fetch live data for instant dashboards
+let LIVE=null;
+async function fetchLive(){
+  const[m,g]=await Promise.all([
+    fetch('/api/meta?action=overall&product=rize').then(r=>r.json()).catch(()=>null),
+    fetch('/api/metrics?view=overall&business=rize&product=rize').then(r=>r.json()).catch(()=>null)
+  ]);
+  const gS=g?.summary||{},mS=m?.summary||{};
+  const P={Search:{s:0,l:0,p:0},Meta:{s:mS.total_spend||0,l:mS.total_leads||0,p:mS.total_conversions||0},Pmax:{s:0,l:0,p:0}};
+  for(const c of(g?.campaigns||[])){const pl=(c.platform||'').includes('pmax')?'Pmax':'Search';P[pl].s+=parseFloat(c.spend||0);P[pl].l+=parseInt(c.leads||0);P[pl].p+=parseInt(c.payments||0)}
+  const ts=P.Search.s+P.Meta.s+P.Pmax.s,tl=P.Search.l+P.Meta.l+P.Pmax.l,tp=P.Search.p+P.Meta.p+P.Pmax.p;
+  const money=n=>n>=100000?'₹'+(n/100000).toFixed(2)+'L':n>=1000?'₹'+(n/1000).toFixed(1)+'K':'₹'+Math.round(n);
+  LIVE={P,ts,tl,tp,money,camps:[...(g?.campaigns||[]).slice(0,7).map(c=>({n:c.campaign_name?.slice(0,40),src:'Google',s:parseFloat(c.spend||0),l:parseInt(c.leads||0),p:parseInt(c.payments||0)})),...(m?.campaigns||[]).slice(0,3).map(c=>({n:c.campaign_name?.slice(0,40),src:'Meta',s:c.spend||0,l:c.leads||0,p:c.conversions||0}))]};
+}
+fetchLive();
+
+// Instant pattern-matched dashboards (no API call, <100ms)
+function tryInstant(prompt){
+  if(!LIVE)return null;
+  const q=prompt.toLowerCase();
+  const{P,ts,tl,tp,money,camps}=LIVE;
+  const pn=Object.keys(P);
+
+  if(q.match(/spend|budget|allocat/)){
+    return{title:'Spend & Budget Allocation',components:[
+      {type:'kpi',w:12,title:'Spend Overview',data:{items:[{label:'Total Spend',value:money(ts),hint:'All channels'},{label:'Google Search',value:money(P.Search.s),hint:((P.Search.s/ts)*100).toFixed(0)+'% share'},{label:'Meta',value:money(P.Meta.s),hint:((P.Meta.s/ts)*100).toFixed(0)+'% share'},{label:'Pmax',value:money(P.Pmax.s),hint:((P.Pmax.s/ts)*100).toFixed(0)+'% share'},{label:'Budget Target',value:'₹18.78L',hint:'AOP Aug 2026'}]}},
+      {type:'doughnut',w:6,title:'Channel Split',data:{labels:pn,data:pn.map(n=>P[n].s),colors:['#3f86f5','#ad8cff','#22d3ee']}},
+      {type:'bar',w:6,title:'Spend vs Returns',data:{labels:pn,datasets:[{label:'Spend ₹L',data:pn.map(n=>P[n].s/100000),color:'#3f86f5'},{label:'Payments',data:pn.map(n=>P[n].p),color:'#f5a400'}]}}
+    ]};
+  }
+  if(q.match(/target|track|pac|month|686/)){
+    const achieved=tp,target=686,pct=((achieved/target)*100).toFixed(0);
+    return{title:'Monthly Target Pacing — Aug 2026',components:[
+      {type:'kpi',w:12,title:'Target Status',data:{items:[{label:'Payments',value:String(achieved)+'/686',hint:pct+'% achieved',direction:achieved>=target*0.7?'up':'down'},{label:'Spend',value:money(ts)+'/₹18.78L',hint:((ts/1878505)*100).toFixed(0)+'% spent'},{label:'CPP',value:tp>0?money(ts/tp):'—',hint:'Target ₹2,738'},{label:'L2P',value:tl>0?((tp/tl)*100).toFixed(1)+'%':'—',hint:'Target 11.3%'},{label:'Status',value:parseInt(pct)>=65?'ON TRACK':'AT RISK',direction:parseInt(pct)>=65?'up':'down'}]}},
+      {type:'bar',w:12,title:'Platform Contribution to Payments',data:{labels:pn,datasets:[{label:'Payments',data:pn.map(n=>P[n].p),color:'#22c55e'},{label:'Leads',data:pn.map(n=>P[n].l),color:'#6d9bff'}]}}
+    ]};
+  }
+  if(q.match(/platform|compare|google.*meta|meta.*google|channel/)){
+    return{title:'Platform Comparison',components:[
+      {type:'kpi',w:12,title:'Platform KPIs',data:{items:pn.map(n=>({label:n,value:P[n].p>0?money(P[n].s/P[n].p):'—',hint:P[n].p+' payments'}))}},
+      {type:'bar',w:6,title:'Platform Performance',data:{labels:pn,datasets:[{label:'Spend ₹L',data:pn.map(n=>P[n].s/100000),color:'#3f86f5'},{label:'Leads',data:pn.map(n=>P[n].l),color:'#22c55e'},{label:'Payments',data:pn.map(n=>P[n].p),color:'#f5a400'}]}},
+      {type:'doughnut',w:6,title:'Budget Split',data:{labels:pn,data:pn.map(n=>P[n].s),colors:['#3f86f5','#ad8cff','#22d3ee']}},
+      {type:'table',w:12,title:'Efficiency Table',data:{headers:['Platform','Spend','Leads','Payments','CPL','CPP','L2P','Share'],rows:pn.map(n=>[n,money(P[n].s),P[n].l,P[n].p,P[n].l>0?money(P[n].s/P[n].l):'—',P[n].p>0?money(P[n].s/P[n].p):'—',P[n].l>0?((P[n].p/P[n].l)*100).toFixed(1)+'%':'—',((P[n].s/ts)*100).toFixed(0)+'%'])}}
+    ]};
+  }
+  if(q.match(/campaign|top|perform|best|worst/)){
+    return{title:'Campaign Performance',components:[
+      {type:'kpi',w:12,title:'Overview',data:{items:[{label:'Campaigns',value:String(camps.length)},{label:'Total Spend',value:money(ts)},{label:'Total Payments',value:String(tp)},{label:'Avg CPP',value:tp>0?money(ts/tp):'—'}]}},
+      {type:'table',w:12,title:'All Campaigns',data:{headers:['Campaign','Source','Spend','Leads','Payments','CPP','L2P'],rows:camps.map(c=>[c.n||'—',c.src,money(c.s),c.l,c.p,c.p>0?money(c.s/c.p):'—',c.l>0?((c.p/c.l)*100).toFixed(1)+'%':'—'])}}
+    ]};
+  }
+  if(q.match(/cpp|efficiency|health|cap|threshold/)){
+    const target=2700;
+    return{title:'CPP Health Check vs ₹2,700 Target',components:[
+      {type:'kpi',w:12,title:'Efficiency Status',data:{items:[{label:'Blended CPP',value:tp>0?money(ts/tp):'—',hint:ts/tp<target?'✅ Within target':'⚠️ Above target',direction:ts/tp<target?'up':'down'},{label:'Target',value:'₹2,700',hint:'Rize AOP'},{label:'L2P Rate',value:tl>0?((tp/tl)*100).toFixed(1)+'%':'—',hint:'Target 11.3%'}]}},
+      {type:'bar',w:12,title:'CPP by Platform',data:{labels:pn,datasets:[{label:'CPP ₹',data:pn.map(n=>P[n].p>0?P[n].s/P[n].p:0),color:'#fa7777'}]}},
+      {type:'table',w:12,title:'Campaign CPP Analysis',data:{headers:['Campaign','Source','Spend','Payments','CPP','vs Target'],rows:camps.filter(c=>c.p>0).map(c=>{const cpp=c.s/c.p;return[c.n,c.src,money(c.s),c.p,money(cpp),cpp>target?'⚠️ +'+(((cpp-target)/target)*100).toFixed(0)+'%':'✅ '+(((target-cpp)/target)*100).toFixed(0)+'% under']})}}
+    ]};
+  }
+  if(q.match(/leader|exec|summary|overview|kpi/)){
+    return{title:'Leadership Summary — Rize Performance Marketing',components:[
+      {type:'kpi',w:12,title:'Executive KPIs',data:{items:[{label:'Investment',value:money(ts),hint:'Google + Meta'},{label:'Payments',value:String(tp),hint:'Target: 686'},{label:'Unit Economics',value:tp>0?money(ts/tp)+'/payment':'—',hint:'LTV: ₹16.5K'},{label:'Funnel Health',value:tl>0?((tp/tl)*100).toFixed(1)+'% L2P':'—',hint:'Target 11.3%'},{label:'ROAS (LTV)',value:tp>0?((tp*16500/ts)).toFixed(1)+'x':'—',hint:'on ₹16.5K LTV'}]}},
+      {type:'doughnut',w:6,title:'Channel Investment',data:{labels:pn,data:pn.map(n=>P[n].s),colors:['#3f86f5','#ad8cff','#22d3ee']}},
+      {type:'bar',w:6,title:'Payments by Channel',data:{labels:pn,datasets:[{label:'Payments',data:pn.map(n=>P[n].p),color:'#22c55e'}]}},
+      {type:'table',w:12,title:'Channel ROI',data:{headers:['Channel','Spend','Payments','CPP','Direct ROAS','LTV ROAS'],rows:pn.map(n=>[n,money(P[n].s),P[n].p,P[n].p>0?money(P[n].s/P[n].p):'—',P[n].p>0?(P[n].p*1499/P[n].s).toFixed(2)+'x':'—',P[n].p>0?(P[n].p*16500/P[n].s).toFixed(1)+'x':'—'])}}
+    ]};
+  }
+  return null; // No match — fall through to Claude
+}
+
 async function generate(prompt){
+  // Try instant pattern match first (<100ms)
+  const instant=tryInstant(prompt);
+  if(instant){
+    charts.forEach(c=>c.destroy());charts=[];
+    renderDashboard(instant);
+    return;
+  }
+
+  // Fall through to Claude API (slow path, 10-15s)
   const grid=$('grid');
-  grid.innerHTML='<div class="thinking"><div class="spinner"></div>Marviz is building your dashboard...</div>';
+  grid.innerHTML='<div class="thinking"><div class="spinner"></div>Marviz is building your custom dashboard... (AI generating)</div>';
   charts.forEach(c=>c.destroy());charts=[];
 
   try{
