@@ -1,234 +1,324 @@
 <!doctype html>
-<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>AI Dashboard — Marviz</title>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Marviz AI Dashboard Builder</title>
 <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
 <style>
 :root{--bg:#0f1420;--p:#161c2e;--p2:#1d263b;--l:#2b3652;--t:#e7edf8;--m:#8d9ab8;--b:#6d9bff;--g:#38d39f;--a:#f5bd43;--r:#fa7777}
-*{box-sizing:border-box;margin:0}body{padding:20px 24px;background:var(--bg);color:var(--t);font:13px -apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif}
-.header{display:flex;justify-content:space-between;align-items:center;margin-bottom:16px}
-.header h1{font-size:20px}.header .sub{color:var(--m);font-size:11px;margin-top:3px}
-.badge{background:var(--p);border:1px solid var(--l);border-radius:10px;padding:7px 12px;color:var(--m);font-size:11px}
-.ask-bar{display:flex;gap:10px;margin-bottom:16px;padding:14px;background:var(--p);border:1px solid var(--l);border-radius:12px}
-.ask-bar input{flex:1;padding:11px 14px;border-radius:8px;border:1px solid var(--l);background:var(--p2);color:var(--t);font-size:13px}
-.ask-bar input:focus{outline:none;border-color:var(--b)}
-.ask-bar button{padding:11px 20px;border-radius:8px;border:none;background:var(--b);color:#fff;font-size:13px;font-weight:600;cursor:pointer}
-.ask-bar button:hover{opacity:.9}
-.ask-bar .mic{width:42px;height:42px;border-radius:50%;border:none;background:linear-gradient(135deg,#2f6d5c,#5fae94);color:#fff;font-size:18px;cursor:pointer;flex-shrink:0}
-.ask-bar .mic.recording{box-shadow:0 0 0 6px rgba(47,109,92,.3);transform:scale(1.08)}
-.quick-bar{display:flex;gap:6px;margin-bottom:16px;flex-wrap:wrap}
-.quick-bar button{padding:6px 12px;border-radius:7px;border:1px solid var(--l);background:var(--p2);color:var(--m);font-size:11px;cursor:pointer}
-.quick-bar button:hover{border-color:var(--b);color:var(--t)}
-.widgets{display:grid;grid-template-columns:repeat(2,1fr);gap:12px}
-.widget{background:var(--p);border:1px solid var(--l);border-radius:12px;padding:16px;min-height:200px}
-.widget.full{grid-column:1/-1}
-.widget h3{font-size:12px;color:var(--m);text-transform:uppercase;letter-spacing:.04em;margin-bottom:10px}
-.widget .chart-area{height:220px}
-.widget .kpi-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:10px}
-.widget .kpi{text-align:center;padding:12px;background:var(--p2);border-radius:8px}
-.widget .kpi .kpi-label{font-size:10px;color:var(--m);text-transform:uppercase}
-.widget .kpi .kpi-value{font-size:20px;font-weight:700;margin-top:4px}
-.widget table{width:100%;border-collapse:collapse;font-size:11px}
-.widget th,.widget td{padding:7px 8px;border-bottom:1px solid var(--l);text-align:right}
-.widget th{color:var(--m);font-size:9px;text-transform:uppercase}
-.widget th:first-child,.widget td:first-child{text-align:left}
-.widget tr:hover td{background:var(--p2)}
-.status{font-size:11px;color:var(--m);margin-bottom:12px;display:flex;align-items:center;gap:8px}
-.status .dot{width:7px;height:7px;border-radius:50%;background:var(--g)}
-.empty{text-align:center;padding:80px 20px;color:var(--m)}
-.empty h2{font-size:16px;color:var(--t);margin-bottom:8px}
-.thinking{color:var(--a);font-style:italic;padding:12px;background:var(--p);border:1px solid var(--l);border-radius:8px;margin-bottom:12px;font-size:12px}
+[data-theme="light"]{--bg:#f4f8f6;--p:#ffffff;--p2:#f2f8f5;--l:#e3ece8;--t:#16241f;--m:#7d938b;--b:#2f6d5c;--g:#17c383;--a:#a45708;--r:#b4233a}
+*{box-sizing:border-box;margin:0}body{padding:0;background:var(--bg);color:var(--t);font:13px -apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif}
+.topbar{display:flex;align-items:center;padding:14px 24px;background:var(--p);border-bottom:1px solid var(--l)}
+.logo{width:32px;height:32px;border-radius:9px;background:linear-gradient(135deg,#2f6d5c,#5fae94);display:flex;align-items:center;justify-content:center;color:#fff;font-weight:800;font-size:14px;margin-right:10px}
+.brand{font-weight:700;font-size:15px}.brand-sub{color:var(--m);font-size:10px;margin-top:1px}
+.topbar .right{margin-left:auto;display:flex;align-items:center;gap:12px}
+.topbar a{color:var(--m);font-size:11px;text-decoration:none;padding:6px 12px;border:1px solid var(--l);border-radius:7px}
+.topbar a:hover{border-color:var(--b);color:var(--t)}
+.main{padding:20px 24px}
+.ask{display:flex;gap:10px;margin-bottom:20px;padding:16px;background:var(--p);border:1px solid var(--l);border-radius:14px;align-items:center}
+.ask .mic{width:46px;height:46px;border-radius:50%;border:none;background:linear-gradient(135deg,#2f6d5c,#5fae94);color:#fff;font-size:18px;cursor:pointer;flex-shrink:0;transition:all .15s}
+.ask input{flex:1;padding:13px 16px;border-radius:10px;border:1px solid var(--l);background:var(--p2);color:var(--t);font-size:14px}
+.ask input:focus{outline:none;border-color:var(--b);box-shadow:0 0 0 3px rgba(99,102,241,.1)}
+.ask .go{padding:13px 24px;border-radius:10px;border:none;background:linear-gradient(135deg,#2f6d5c,#5fae94);color:#fff;font-size:13px;font-weight:700;cursor:pointer;letter-spacing:.02em}
+.status-bar{display:flex;align-items:center;gap:8px;margin-bottom:16px;font-size:11px;color:var(--m)}
+.status-bar .dot{width:7px;height:7px;border-radius:50%}
+.grid{display:grid;grid-template-columns:repeat(12,1fr);gap:12px}
+.widget{background:var(--p);border:1px solid var(--l);border-radius:12px;padding:16px;position:relative;overflow:hidden;animation:fadeUp .4s ease both}
+.widget .bar-top{position:absolute;top:0;left:0;right:0;height:3px}
+.widget h3{font-size:11px;color:var(--m);text-transform:uppercase;letter-spacing:.05em;margin-bottom:12px;font-weight:700}
+.widget .chart-area{height:200px}
+.kpi-grid{display:grid;gap:8px}
+.kpi{text-align:center;padding:14px 8px;background:var(--p2);border-radius:9px;border:1px solid var(--l)}
+.kpi .kl{font-size:9px;color:var(--m);text-transform:uppercase;letter-spacing:.04em}
+.kpi .kv{font-size:19px;font-weight:700;margin-top:4px}
+.kpi .kv.up{color:var(--g)}.kpi .kv.down{color:var(--r)}.kpi .kv.neutral{color:var(--a)}
+.kpi .kh{font-size:9px;color:var(--m);margin-top:2px}
+table{width:100%;border-collapse:collapse;font-size:11px}
+th,td{padding:8px 10px;border-bottom:1px solid var(--l);text-align:right}
+th{color:var(--m);font-size:9px;text-transform:uppercase}th:first-child,td:first-child{text-align:left}
+tr:hover td{background:var(--p2)}
+.empty{text-align:center;padding:80px 20px;color:var(--m);grid-column:1/-1}
+.empty h2{font-size:18px;color:var(--t);margin-bottom:8px;font-weight:700}
+.thinking{grid-column:1/-1;padding:16px;background:var(--p);border:1px solid var(--l);border-radius:10px;color:var(--a);font-size:12px;display:flex;align-items:center;gap:8px;animation:fadeUp .3s ease}
+@keyframes fadeUp{from{opacity:0;transform:translateY(12px)}to{opacity:1;transform:translateY(0)}}
+@keyframes pulse{0%,100%{opacity:1}50%{opacity:.4}}
+.thinking .spinner{width:14px;height:14px;border:2px solid var(--a);border-top-color:transparent;border-radius:50%;animation:spin .8s linear infinite}
+@keyframes spin{to{transform:rotate(360deg)}}
 </style></head><body>
 
-<div class="header">
-  <div><h1>AI Dashboard Builder</h1><p class="sub">Ask Marviz to build charts, tables, and KPIs — they appear here dynamically</p></div>
-  <div class="badge"><span class="dot" style="display:inline-block;width:7px;height:7px;border-radius:50%;margin-right:5px" id="status-dot"></span><span id="status-text">connecting...</span></div>
+<div class="topbar">
+  <div class="logo">M</div>
+  <div><div class="brand">Marviz AI</div><div class="brand-sub">Dashboard Builder</div></div>
+  <div class="right">
+    <button id="themeToggle" onclick="toggleTheme()" style="padding:6px 12px;border-radius:7px;border:1px solid var(--l);background:var(--p2);color:var(--m);font-size:11px;cursor:pointer;font-weight:600">☀️ Light</button>
+    <a href="/dashboard-unified.html">📊 Analytics Dashboard</a>
+    <a href="http://localhost:8000" target="_blank">🎤 Marviz Standalone</a>
+  </div>
 </div>
 
-<div class="ask-bar">
-  <button class="mic" id="micBtn">🎤</button>
-  <input id="askInput" type="text" placeholder="Ask: 'Show me spend by platform', 'CPP trend chart', 'Campaign table sorted by L2P'..." />
-  <button id="askBtn">Generate</button>
-</div>
+<div class="main">
+  <div class="ask">
+    <button class="mic" id="mic" title="Hold to talk">🎤</button>
+    <input id="q" placeholder="Ask Marviz to build a dashboard: 'Show campaign efficiency', 'CPP health check', 'Leadership summary'..." />
+    <button class="go" id="go">Build Dashboard</button>
+  </div>
 
-<div class="quick-bar">
-  <button onclick="ask('Show me a bar chart of spend by platform for last 14 days')">📊 Spend by Platform</button>
-  <button onclick="ask('Create a KPI summary with total spend, leads, payments, CPP, and L2P rate')">🎯 KPI Summary</button>
-  <button onclick="ask('Show campaign performance table sorted by CPP')">📋 Campaign Table</button>
-  <button onclick="ask('Give me a doughnut chart of budget allocation across Search, Meta, Pmax')">🍩 Budget Split</button>
-  <button onclick="ask('Show CPP by campaign as a horizontal bar chart, highlight those above ₹2700 target')">⚠️ CPP Analysis</button>
-  <button onclick="ask('Create a leadership view: KPIs on top, then platform breakdown chart')">👔 Leadership View</button>
-</div>
+  <div class="status-bar">
+    <span class="dot" id="dot" style="background:var(--g)"></span><span>Marviz ready</span>
+    <span style="margin-left:auto;display:flex;gap:8px;align-items:center">
+      <button id="saveBtn" onclick="saveDashboard()" style="display:none;padding:5px 12px;border-radius:6px;border:1px solid var(--g);background:transparent;color:var(--g);font-size:10px;font-weight:700;cursor:pointer">💾 Save HTML</button>
+      <span style="font-size:10px;color:var(--m)">Powered by Claude + Real Data</span>
+    </span>
+  </div>
 
-<div id="thinking" class="thinking" style="display:none">Thinking...</div>
-<div id="widgets" class="widgets"></div>
-<div id="empty" class="empty"><h2>Your AI-built dashboard</h2><p>Ask Marviz to create charts, tables, or KPIs. Each response adds a widget here.</p></div>
+  <!-- Saved Dashboards / History -->
+  <div id="saved-bar" style="margin-bottom:14px;padding:12px 14px;background:var(--p);border:1px solid var(--l);border-radius:10px">
+    <div style="display:flex;align-items:center;gap:8px;margin-bottom:8px">
+      <span style="font-size:10px;font-weight:700;color:var(--m);text-transform:uppercase;letter-spacing:.04em">📁 Saved Dashboards</span>
+      <span id="saved-count" style="font-size:9px;color:var(--m)"></span>
+      <button onclick="clearHistory()" style="margin-left:auto;padding:3px 8px;border-radius:5px;border:1px solid var(--l);background:transparent;color:var(--m);font-size:9px;cursor:pointer">Clear All</button>
+    </div>
+    <div id="saved-list" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:8px"></div>
+    <div id="saved-empty" style="font-size:11px;color:var(--m);padding:6px 0">No saved dashboards yet. Generate one and it'll appear here.</div>
+  </div>
+
+  <div class="grid" id="grid">
+    <div class="empty"><h2>Ask Marviz to build a dashboard</h2><p>Type a question or prompt — AI generates charts, KPIs, and tables with your live Rize data</p></div>
+  </div>
+</div>
 
 <script>
-const widgets=document.getElementById('widgets');
-const empty=document.getElementById('empty');
-const thinking=document.getElementById('thinking');
-const statusDot=document.getElementById('status-dot');
-const statusText=document.getElementById('status-text');
-let chartInstances={};
+let charts=[];
+const $=id=>document.getElementById(id);
 
-const params=new URLSearchParams(location.search);
-const marvizHost=params.get('marviz')||localStorage.getItem('marviz_url')||null;
-const MARVIZ_WS=marvizHost?marvizHost.replace('https://','wss://').replace('http://','ws://')+'/ws/marviz':'ws://localhost:8000/ws/marviz';
-if(marvizHost)localStorage.setItem('marviz_url',marvizHost);
+async function generate(prompt){
+  const grid=$('grid');
+  grid.innerHTML='<div class="thinking"><div class="spinner"></div>Marviz is building your dashboard...</div>';
+  charts.forEach(c=>c.destroy());charts=[];
 
-// Also fetch data from dashboard APIs for the AI to reference
-let LIVE_DATA=null;
-async function fetchLiveData(){
-  const[meta,google]=await Promise.all([
-    fetch('/api/meta?action=overall&product=rize').then(r=>r.json()).catch(()=>null),
-    fetch('/api/metrics?view=overall&business=rize&product=rize').then(r=>r.json()).catch(()=>null)
-  ]);
-  LIVE_DATA={meta,google};
-}
-fetchLiveData();
+  try{
+    const res=await fetch('/api/generate-dashboard',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({prompt})});
+    if(!res.ok){const e=await res.json();grid.innerHTML=`<div class="empty"><h2>Error</h2><p>${e.error||'Failed to generate'}</p></div>`;return}
 
-let ws=null,pendingResponse='';
+    // Read SSE stream and accumulate JSON
+    const reader=res.body.getReader();
+    const decoder=new TextDecoder();
+    let full='';
+    let buffer='';
 
-function connect(){
-  ws=new WebSocket(MARVIZ_WS);
-  ws.onopen=()=>{statusDot.style.background='#38d39f';statusText.textContent='connected'};
-  ws.onerror=()=>{statusDot.style.background='#fa7777';statusText.textContent='offline — start Marviz on port 8000'};
-  ws.onclose=()=>{statusDot.style.background='#f5bd43';statusText.textContent='disconnected'};
-  ws.onmessage=(e)=>{
-    const d=JSON.parse(e.data);
-    if(d.type==='text_chunk'){pendingResponse+=d.text;return}
-    if(d.text_response){
-      thinking.style.display='none';
-      pendingResponse=d.text_response;
-      renderWidget(pendingResponse);
-      pendingResponse='';
+    while(true){
+      const{done,value}=await reader.read();
+      if(done)break;
+      buffer+=decoder.decode(value,{stream:true});
+      // Process complete lines
+      const lines=buffer.split('\n');
+      buffer=lines.pop()||'';
+      for(const line of lines){
+        if(!line.startsWith('data: '))continue;
+        const data=line.slice(6).trim();
+        if(!data||data==='[DONE]')continue;
+        try{
+          const evt=JSON.parse(data);
+          if(evt.type==='content_block_delta'&&evt.delta?.type==='text_delta'){
+            full+=evt.delta.text;
+          }
+        }catch(e){}
+      }
     }
-  };
-}
 
-function ask(text){
-  if(!text)return;
-  document.getElementById('askInput').value='';
-  if(!ws||ws.readyState!==WebSocket.OPEN){
-    // Fallback: generate widget from local data without Marviz
-    thinking.textContent='Generating from local data...';
-    thinking.style.display='block';
-    setTimeout(()=>{generateLocalWidget(text);thinking.style.display='none'},500);
-    return;
-  }
-  thinking.textContent='Marviz is analyzing data and building your widget...';
-  thinking.style.display='block';
-  pendingResponse='';
-  // Augment the prompt to ask for structured widget output
-  const augmented=text+'\n\nIMPORTANT: After your analysis, output a JSON widget spec wrapped in ```json ... ``` with this structure: {"widget_type":"bar|doughnut|table|kpi","title":"...","data":{...}} where data matches the widget type. For bar/doughnut: {"labels":[],"datasets":[{"label":"","data":[],"backgroundColor":""}]}. For table: {"headers":[],"rows":[[]]}. For kpi: {"items":[{"label":"","value":""}]}';
-  ws.send(JSON.stringify({type:'text',text:augmented}));
-}
+    // Parse the accumulated JSON
+    const jsonMatch=full.match(/\{[\s\S]*\}/);
+    if(!jsonMatch){grid.innerHTML=`<div class="empty"><h2>AI Response</h2><p style="white-space:pre-wrap;text-align:left;font-size:12px">${full.slice(0,500)}</p></div>`;return}
 
-function generateLocalWidget(query){
-  if(!LIVE_DATA)return;
-  const q=query.toLowerCase();
-  const meta=LIVE_DATA.meta,google=LIVE_DATA.google;
-  const gS=google?.summary||{},mS=meta?.summary||{};
-
-  if(q.includes('spend')&&q.includes('platform')){
-    addChartWidget('bar','Spend by Platform',[
-      'Google Search','Meta','Google Pmax'
-    ],[{label:'Spend (₹L)',data:[parseFloat(gS.total_spend||0)/100000,mS.total_spend/100000||0,0],backgroundColor:['#3f86f5','#ad8cff','#22d3ee']}]);
-  } else if(q.includes('kpi')||q.includes('summary')){
-    addKPIWidget('Performance Summary',[
-      {label:'Total Spend',value:'₹'+(((parseFloat(gS.total_spend)||0)+(mS.total_spend||0))/100000).toFixed(2)+'L'},
-      {label:'Leads',value:String((parseInt(gS.total_leads)||0)+(mS.total_leads||0))},
-      {label:'Payments',value:String((parseInt(gS.total_payments)||0)+(mS.total_conversions||0))},
-    ]);
-  } else if(q.includes('table')||q.includes('campaign')){
-    const camps=(google?.campaigns||[]).slice(0,8);
-    addTableWidget('Campaign Performance',['Campaign','Spend','Leads','Payments','CPP'],
-      camps.map(c=>[c.campaign_name?.slice(0,35)||'—','₹'+(parseFloat(c.spend||0)/1000).toFixed(1)+'K',c.leads||0,c.payments||0,parseInt(c.payments)>0?'₹'+Math.round(parseFloat(c.spend||0)/parseInt(c.payments)):'—']));
-  } else if(q.includes('doughnut')||q.includes('split')||q.includes('allocation')){
-    addChartWidget('doughnut','Budget Allocation',['Search','Meta','Pmax'],
-      [{data:[parseFloat(gS.total_spend||0),mS.total_spend||0,0],backgroundColor:['#3f86f5','#ad8cff','#22d3ee']}]);
-  } else {
-    addKPIWidget('Quick Answer',[{label:'Response',value:'Ask something more specific about spend, campaigns, or performance'}]);
+    const dashboard=JSON.parse(jsonMatch[0]);
+    renderDashboard(dashboard);
+  }catch(e){
+    grid.innerHTML=`<div class="empty"><h2>Error</h2><p>${e.message}</p></div>`;
   }
 }
 
-function renderWidget(text){
-  // Try to extract JSON from the response
-  const jsonMatch=text.match(/```json\s*([\s\S]*?)```/);
-  if(jsonMatch){
-    try{
-      const spec=JSON.parse(jsonMatch[1]);
-      if(spec.widget_type==='bar'||spec.widget_type==='line')addChartWidget(spec.widget_type,spec.title,spec.data.labels,spec.data.datasets);
-      else if(spec.widget_type==='doughnut')addChartWidget('doughnut',spec.title,spec.data.labels,spec.data.datasets);
-      else if(spec.widget_type==='table')addTableWidget(spec.title,spec.data.headers,spec.data.rows);
-      else if(spec.widget_type==='kpi')addKPIWidget(spec.title,spec.data.items);
-      else addTextWidget(text);
-      return;
-    }catch(e){}
-  }
-  // No JSON found — render as text insight + try local generation
-  addTextWidget(text);
+function renderDashboard(d){
+  const grid=$('grid');
+  grid.innerHTML='';
+  if(d.title)grid.innerHTML+=`<div style="grid-column:1/-1;margin-bottom:4px"><h2 style="font-size:16px;font-weight:700">${d.title}</h2></div>`;
+
+  (d.components||[]).forEach((comp,i)=>{
+    const w=comp.w||6;
+    const id='w'+i;
+    const colors=['var(--b)','var(--g)','var(--a)','var(--r)','#8b5cf6','#06b6d4'];
+    const barColor=colors[i%colors.length];
+
+    const div=document.createElement('div');
+    div.className='widget';
+    div.style.gridColumn=`span ${w}`;
+    div.style.animationDelay=`${i*0.08}s`;
+    div.innerHTML=`<div class="bar-top" style="background:${barColor}"></div><h3>${comp.title||''}</h3><div id="${id}"></div>`;
+    grid.appendChild(div);
+
+    setTimeout(()=>{
+      const container=document.getElementById(id);
+      if(!container)return;
+
+      if(comp.type==='kpi'){
+        const items=comp.data?.items||[];
+        const cols=Math.min(items.length,5);
+        container.innerHTML=`<div class="kpi-grid" style="grid-template-columns:repeat(${cols},1fr)">${items.map(it=>`<div class="kpi"><div class="kl">${it.label||''}</div><div class="kv ${it.direction||''}">${it.value||'—'}</div><div class="kh">${it.hint||''}</div></div>`).join('')}</div>`;
+      }
+
+      else if(comp.type==='table'){
+        const h=comp.data?.headers||[];
+        const rows=comp.data?.rows||[];
+        container.innerHTML=`<table><thead><tr>${h.map(x=>'<th>'+x+'</th>').join('')}</tr></thead><tbody>${rows.map(r=>'<tr>'+r.map(c=>'<td>'+c+'</td>').join('')+'</tr>').join('')}</tbody></table>`;
+      }
+
+      else if(['bar','line','pie','doughnut'].includes(comp.type)){
+        container.innerHTML=`<div class="chart-area"><canvas id="c${id}"></canvas></div>`;
+        setTimeout(()=>{
+          const el=document.getElementById('c'+id);if(!el)return;
+          let cfg;
+          if(comp.type==='pie'||comp.type==='doughnut'){
+            cfg={type:comp.type,data:{labels:comp.data?.labels||[],datasets:[{data:comp.data?.data||[],backgroundColor:comp.data?.colors||['#6366f1','#8b5cf6','#ec4899','#f97316','#22c55e','#06b6d4']}]}};
+          }else{
+            cfg={type:comp.type,data:{labels:comp.data?.labels||[],datasets:(comp.data?.datasets||[]).map(ds=>({label:ds.label,data:ds.data,backgroundColor:ds.color||'#6366f1',borderColor:ds.color||'#6366f1',tension:0.3,fill:comp.type==='line'?false:undefined}))}};
+          }
+          cfg.options={responsive:true,maintainAspectRatio:false,plugins:{legend:{labels:{color:'#8d9ab8',boxWidth:10,font:{size:10}}}},scales:(comp.type==='pie'||comp.type==='doughnut')?{}:{x:{ticks:{color:'#6b7085',font:{size:9}},grid:{color:'rgba(255,255,255,.04)'}},y:{ticks:{color:'#6b7085',font:{size:9}},grid:{color:'rgba(255,255,255,.04)'}}}};
+          const c=new Chart(el,cfg);charts.push(c);
+        },80);
+      }
+    },(i+1)*120); // Progressive reveal with delay
+  });
 }
 
-function addChartWidget(type,title,labels,datasets){
+// Event handlers
+$('go').onclick=()=>{const q=$('q').value.trim();if(q){generate(q);$('q').value=''}};
+$('q').addEventListener('keydown',e=>{if(e.key==='Enter'){const q=$('q').value.trim();if(q){generate(q);$('q').value=''}}});
+
+// Mic (connects to Marviz WebSocket for voice)
+const mHost=new URLSearchParams(location.search).get('marviz')||localStorage.getItem('marviz_url')||null;
+const MWS=mHost?mHost.replace('https://','wss://').replace('http://','ws://')+'/ws/marviz':'ws://localhost:8000/ws/marviz';
+if(mHost)localStorage.setItem('marviz_url',mHost);
+let ws=null;
+try{ws=new WebSocket(MWS);ws.onmessage=e=>{const d=JSON.parse(e.data);if(d.transcript){$('q').value=d.transcript;generate(d.transcript)}}}catch(e){}
+let rec=false,mr=null,ac=[];
+$('mic').onmousedown=async()=>{if(rec)return;rec=true;$('mic').style.boxShadow='0 0 0 6px rgba(47,109,92,.3)';const s=await navigator.mediaDevices.getUserMedia({audio:true});mr=new MediaRecorder(s,{mimeType:'audio/webm'});ac=[];mr.ondataavailable=e=>{if(e.data.size>0)ac.push(e.data)};mr.onstop=()=>{const b=new Blob(ac,{type:'audio/webm'});if(ws&&ws.readyState===1)ws.send(b);s.getTracks().forEach(t=>t.stop())};mr.start()};
+function stopR(){if(!rec)return;rec=false;$('mic').style.boxShadow='none';if(mr&&mr.state!=='inactive')mr.stop()}
+$('mic').onmouseup=stopR;$('mic').onmouseleave=stopR;
+
+// Theme toggle
+function toggleTheme(){
+  const html=document.documentElement;
+  const isLight=html.getAttribute('data-theme')==='light';
+  html.setAttribute('data-theme',isLight?'':'light');
+  $('themeToggle').textContent=isLight?'☀️ Light':'🌙 Dark';
+  localStorage.setItem('marviz-theme',isLight?'dark':'light');
+}
+// Restore saved theme
+if(localStorage.getItem('marviz-theme')==='light'){document.documentElement.setAttribute('data-theme','light');$('themeToggle').textContent='🌙 Dark'}
+
+// --- Saved Dashboards ---
+let savedDashboards=JSON.parse(localStorage.getItem('marviz-saved')||'[]');
+let currentDashboardJSON=null;
+let currentPrompt='';
+
+function addToSaved(prompt,dashJSON){
+  savedDashboards.unshift({prompt,json:dashJSON,time:new Date().toLocaleString(),id:Date.now()});
+  if(savedDashboards.length>5)savedDashboards.pop();
+  localStorage.setItem('marviz-saved',JSON.stringify(savedDashboards));
+  renderSaved();
+}
+
+function renderSaved(){
+  const list=$('saved-list');
+  const empty=$('saved-empty');
+  const count=$('saved-count');
+  if(savedDashboards.length===0){empty.style.display='block';list.innerHTML='';count.textContent='';return}
   empty.style.display='none';
-  const id='chart-'+Date.now();
-  const full=type==='doughnut'?'':'full';
-  const div=document.createElement('div');
-  div.className='widget '+full;
-  div.innerHTML=`<h3>${title}</h3><div class="chart-area"><canvas id="${id}"></canvas></div>`;
-  widgets.prepend(div);
+  count.textContent=`(${savedDashboards.length}/5)`;
+  list.innerHTML=savedDashboards.map((h,i)=>`<div onclick="loadSaved(${i})" style="padding:10px 12px;border-radius:8px;border:1px solid var(--l);background:var(--p2);cursor:pointer;transition:all .15s" onmouseover="this.style.borderColor='var(--b)'" onmouseout="this.style.borderColor='var(--l)'">
+    <div style="font-size:11px;font-weight:600;color:var(--t);margin-bottom:3px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${h.json?.title||h.prompt.slice(0,30)}</div>
+    <div style="font-size:9px;color:var(--m)">${h.time}</div>
+    <div style="font-size:9px;color:var(--m);margin-top:2px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">"${h.prompt.slice(0,40)}"</div>
+    <div style="display:flex;gap:4px;margin-top:6px">
+      <button onclick="event.stopPropagation();downloadSaved(${i})" style="padding:2px 6px;border-radius:4px;border:1px solid var(--l);background:transparent;color:var(--g);font-size:8px;cursor:pointer">💾 Download</button>
+      <button onclick="event.stopPropagation();deleteSaved(${i})" style="padding:2px 6px;border-radius:4px;border:1px solid var(--l);background:transparent;color:var(--r);font-size:8px;cursor:pointer">✕</button>
+    </div>
+  </div>`).join('');
+}
+
+function loadSaved(idx){
+  const h=savedDashboards[idx];
+  if(!h)return;
+  currentDashboardJSON=h.json;
+  currentPrompt=h.prompt;
+  renderDashboard(h.json);
+  $('saveBtn').style.display='inline-block';
+}
+
+function deleteSaved(idx){
+  savedDashboards.splice(idx,1);
+  localStorage.setItem('marviz-saved',JSON.stringify(savedDashboards));
+  renderSaved();
+}
+
+function downloadSaved(idx){
+  currentDashboardJSON=savedDashboards[idx].json;
+  currentPrompt=savedDashboards[idx].prompt;
+  saveDashboard();
+}
+
+function clearHistory(){
+  savedDashboards=[];
+  localStorage.removeItem('marviz-saved');
+  renderSaved();
+}
+
+function saveDashboard(){
+  if(!currentDashboardJSON)return;
+  // Build a standalone HTML file
+  const html=`<!doctype html>
+<html><head><meta charset="utf-8"><title>Marviz Dashboard — ${currentPrompt.slice(0,40)}</title>
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"><\/script>
+<style>:root{--bg:#0f1420;--p:#161c2e;--p2:#1d263b;--l:#2b3652;--t:#e7edf8;--m:#8d9ab8;--b:#6d9bff;--g:#38d39f;--a:#f5bd43;--r:#fa7777}*{box-sizing:border-box;margin:0}body{padding:24px;background:var(--bg);color:var(--t);font:13px -apple-system,sans-serif}.grid{display:grid;grid-template-columns:repeat(12,1fr);gap:12px}.widget{background:var(--p);border:1px solid var(--l);border-radius:12px;padding:16px;position:relative;overflow:hidden}.widget .bar-top{position:absolute;top:0;left:0;right:0;height:3px}.widget h3{font-size:11px;color:var(--m);text-transform:uppercase;letter-spacing:.05em;margin-bottom:12px}.widget .chart-area{height:200px}.kpi-grid{display:grid;gap:8px}.kpi{text-align:center;padding:14px 8px;background:var(--p2);border-radius:9px;border:1px solid var(--l)}.kpi .kl{font-size:9px;color:var(--m);text-transform:uppercase}.kpi .kv{font-size:19px;font-weight:700;margin-top:4px}.kpi .kh{font-size:9px;color:var(--m);margin-top:2px}table{width:100%;border-collapse:collapse;font-size:11px}th,td{padding:8px 10px;border-bottom:1px solid var(--l);text-align:right}th{color:var(--m);font-size:9px;text-transform:uppercase}th:first-child,td:first-child{text-align:left}h2{font-size:16px;margin-bottom:12px}</style></head><body>
+<h2>${currentDashboardJSON.title||'Marviz Dashboard'}</h2><p style="color:var(--m);font-size:11px;margin-bottom:16px">Generated: ${new Date().toLocaleString()} | Prompt: "${currentPrompt}"</p>
+<div class="grid" id="grid"></div>
+<script>
+const D=${JSON.stringify(currentDashboardJSON)};
+const grid=document.getElementById('grid');
+const colors=['var(--b)','var(--g)','var(--a)','var(--r)','#8b5cf6','#06b6d4'];
+let charts=[];
+D.components.forEach((comp,i)=>{
+  const w=comp.w||6,id='w'+i,barColor=colors[i%colors.length];
+  const div=document.createElement('div');div.className='widget';div.style.gridColumn='span '+w;
+  div.innerHTML='<div class="bar-top" style="background:'+barColor+'"><\/div><h3>'+(comp.title||'')+'<\/h3><div id="'+id+'"><\/div>';
+  grid.appendChild(div);
   setTimeout(()=>{
-    const el=document.getElementById(id);if(!el)return;
-    chartInstances[id]=new Chart(el,{type,data:{labels,datasets},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{labels:{color:'#8d9ab8',boxWidth:10}}},scales:type==='doughnut'?{}:{x:{ticks:{color:'#6b7085'},grid:{color:'rgba(255,255,255,.04)'}},y:{ticks:{color:'#6b7085'},grid:{color:'rgba(255,255,255,.04)'}}}}});
-  },50);
-}
-
-function addKPIWidget(title,items){
-  empty.style.display='none';
-  const div=document.createElement('div');
-  div.className='widget full';
-  div.innerHTML=`<h3>${title}</h3><div class="kpi-grid">${items.map(i=>`<div class="kpi"><div class="kpi-label">${i.label}</div><div class="kpi-value">${i.value}</div></div>`).join('')}</div>`;
-  widgets.prepend(div);
-}
-
-function addTableWidget(title,headers,rows){
-  empty.style.display='none';
-  const div=document.createElement('div');
-  div.className='widget full';
-  div.innerHTML=`<h3>${title}</h3><table><thead><tr>${headers.map(h=>'<th>'+h+'</th>').join('')}</tr></thead><tbody>${rows.map(r=>'<tr>'+r.map(c=>'<td>'+c+'</td>').join('')+'</tr>').join('')}</tbody></table>`;
-  widgets.prepend(div);
-}
-
-function addTextWidget(text){
-  empty.style.display='none';
-  const div=document.createElement('div');
-  div.className='widget full';
-  div.innerHTML=`<h3>AI Insight</h3><p style="color:var(--t);font-size:12px;line-height:1.5;white-space:pre-wrap">${text.replace(/```json[\s\S]*?```/g,'').trim()}</p>`;
-  widgets.prepend(div);
-}
-
-// Event listeners
-document.getElementById('askBtn').addEventListener('click',()=>{ask(document.getElementById('askInput').value.trim())});
-document.getElementById('askInput').addEventListener('keydown',(e)=>{if(e.key==='Enter')ask(document.getElementById('askInput').value.trim())});
-
-// Mic
-let isRecording=false,mediaRecorder=null,audioChunks=[];
-document.getElementById('micBtn').addEventListener('mousedown',async()=>{
-  if(isRecording)return;isRecording=true;
-  document.getElementById('micBtn').classList.add('recording');
-  const stream=await navigator.mediaDevices.getUserMedia({audio:true});
-  mediaRecorder=new MediaRecorder(stream,{mimeType:'audio/webm'});audioChunks=[];
-  mediaRecorder.ondataavailable=(e)=>{if(e.data.size>0)audioChunks.push(e.data)};
-  mediaRecorder.onstop=()=>{
-    const blob=new Blob(audioChunks,{type:'audio/webm'});
-    if(ws&&ws.readyState===WebSocket.OPEN){ws.send(blob);thinking.textContent='Transcribing & building widget...';thinking.style.display='block'}
-    stream.getTracks().forEach(t=>t.stop());
-  };
-  mediaRecorder.start();
+    const c=document.getElementById(id);if(!c)return;
+    if(comp.type==='kpi'){const items=comp.data?.items||[];c.innerHTML='<div class="kpi-grid" style="grid-template-columns:repeat('+Math.min(items.length,5)+',1fr)">'+items.map(it=>'<div class="kpi"><div class="kl">'+it.label+'<\/div><div class="kv">'+it.value+'<\/div><div class="kh">'+(it.hint||'')+'<\/div><\/div>').join('')+'<\/div>'}
+    else if(comp.type==='table'){c.innerHTML='<table><thead><tr>'+(comp.data?.headers||[]).map(h=>'<th>'+h+'<\/th>').join('')+'<\/tr><\/thead><tbody>'+(comp.data?.rows||[]).map(r=>'<tr>'+r.map(x=>'<td>'+x+'<\/td>').join('')+'<\/tr>').join('')+'<\/tbody><\/table>'}
+    else{c.innerHTML='<div class="chart-area"><canvas id="c'+id+'"><\/canvas><\/div>';setTimeout(()=>{const el=document.getElementById('c'+id);if(!el)return;let cfg;if(comp.type==='pie'||comp.type==='doughnut'){cfg={type:comp.type,data:{labels:comp.data?.labels||[],datasets:[{data:comp.data?.data||[],backgroundColor:comp.data?.colors||['#6366f1','#8b5cf6','#ec4899','#f97316','#22c55e']}]}}}else{cfg={type:comp.type,data:{labels:comp.data?.labels||[],datasets:(comp.data?.datasets||[]).map(ds=>({label:ds.label,data:ds.data,backgroundColor:ds.color,borderColor:ds.color,tension:0.3}))}}}cfg.options={responsive:true,maintainAspectRatio:false,plugins:{legend:{labels:{color:'#8d9ab8',boxWidth:10}}},scales:(comp.type==='pie'||comp.type==='doughnut')?{}:{x:{ticks:{color:'#6b7085'},grid:{color:'rgba(255,255,255,.04)'}},y:{ticks:{color:'#6b7085'},grid:{color:'rgba(255,255,255,.04)'}}}};new Chart(el,cfg)},50)}
+  },i*100);
 });
-function stopMic(){if(!isRecording)return;isRecording=false;document.getElementById('micBtn').classList.remove('recording');if(mediaRecorder&&mediaRecorder.state!=='inactive')mediaRecorder.stop()}
-document.getElementById('micBtn').addEventListener('mouseup',stopMic);
-document.getElementById('micBtn').addEventListener('mouseleave',stopMic);
+<\/script><\/body><\/html>`;
 
-connect();
+  const blob=new Blob([html],{type:'text/html'});
+  const a=document.createElement('a');
+  a.href=URL.createObjectURL(blob);
+  a.download='marviz-dashboard-'+Date.now()+'.html';
+  a.click();
+}
+
+// Patch generate() to track prompt
+const _origGenerate=generate;
+generate=async function(prompt){
+  currentPrompt=prompt;
+  await _origGenerate(prompt);
+}
+
+// Patch renderDashboard to show save button and auto-save
+const _origRender=renderDashboard;
+renderDashboard=function(d){
+  currentDashboardJSON=d;
+  _origRender(d);
+  $('saveBtn').style.display='inline-block';
+  if(currentPrompt&&d?.components)addToSaved(currentPrompt,d);
+}
+
+renderSaved();
 </script></body></html>

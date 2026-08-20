@@ -2,7 +2,9 @@
 <html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Rize — Performance Command Center</title>
 <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
 <style>
-:root{--bg:#0f1420;--p:#161c2e;--p2:#1d263b;--l:#2b3652;--t:#e7edf8;--m:#8d9ab8;--b:#6d9bff;--g:#38d39f;--a:#f5bd43;--r:#fa7777}*{box-sizing:border-box;margin:0}body{padding:20px 24px 30px;background:var(--bg);color:var(--t);font:13px -apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif}
+:root{--bg:#0f1420;--p:#161c2e;--p2:#1d263b;--l:#2b3652;--t:#e7edf8;--m:#8d9ab8;--b:#6d9bff;--g:#38d39f;--a:#f5bd43;--r:#fa7777}
+[data-theme="light"]{--bg:#f4f8f6;--p:#ffffff;--p2:#f2f8f5;--l:#e3ece8;--t:#16241f;--m:#7d938b;--b:#2f6d5c;--g:#17c383;--a:#a45708;--r:#b4233a}
+*{box-sizing:border-box;margin:0}body{padding:20px 24px 30px;background:var(--bg);color:var(--t);font:13px -apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif}
 .header{display:flex;justify-content:space-between;align-items:center;margin-bottom:14px}.header h1{font-size:22px}.sub{color:var(--m);font-size:11px;margin-top:3px}
 .badge{background:var(--p);border:1px solid var(--l);border-radius:10px;padding:7px 12px;color:var(--m);font-size:11px}.badge b{color:var(--t)}
 .controls,.filters{background:var(--p);border:1px solid var(--l);border-radius:10px;display:flex;gap:10px;align-items:center;flex-wrap:wrap;padding:10px 14px;margin-bottom:12px}
@@ -51,8 +53,10 @@ body.panel-open{padding-left:340px}
 <div class="header">
   <div><h1>Rize — Performance Command Center</h1><p class="sub">Google Ads + Meta Ads + DataGaaru Backend · AI Voice Agent</p></div>
   <div style="display:flex;gap:8px;align-items:center">
-    <a href="/ai-dashboard.html" style="padding:7px 14px;border-radius:8px;background:linear-gradient(135deg,#2f6d5c,#5fae94);color:#fff;font-size:11px;font-weight:700;text-decoration:none">🤖 AI Dashboard Builder →</a>
-    <div class="badge"><span id="live-badge" style="color:#38d39f">● LIVE</span> <b>Rize Incorporation</b></div>
+    <button id="themeToggle" onclick="toggleTheme()" style="padding:6px 12px;border-radius:7px;border:1px solid var(--l);background:var(--p2);color:var(--m);font-size:11px;cursor:pointer;font-weight:600">☀️ Light</button>
+    <a href="/ai-dashboard.html" style="padding:7px 14px;border-radius:8px;background:linear-gradient(135deg,#2f6d5c,#5fae94);color:#fff;font-size:11px;font-weight:700;text-decoration:none">🤖 AI Builder (Home)</a>
+    <a href="http://localhost:8000" target="_blank" style="padding:7px 12px;border-radius:8px;border:1px solid var(--l);background:var(--p2);color:var(--m);font-size:11px;text-decoration:none">🎤 Marviz</a>
+    <div class="badge"><span id="live-badge" style="color:#38d39f">● LIVE</span> <b>Rize</b></div>
   </div>
 </div>
 
@@ -357,4 +361,14 @@ function askQuick(text){document.getElementById('textInput').value='';sendMarviz
   micBtn.addEventListener('mouseleave',stopMic);
   connect();
 })();
+
+// Theme toggle
+function toggleTheme(){
+  const html=document.documentElement;
+  const isLight=html.getAttribute('data-theme')==='light';
+  html.setAttribute('data-theme',isLight?'':'light');
+  document.getElementById('themeToggle').textContent=isLight?'☀️ Light':'🌙 Dark';
+  localStorage.setItem('marviz-theme',isLight?'dark':'light');
+}
+if(localStorage.getItem('marviz-theme')==='light'){document.documentElement.setAttribute('data-theme','light');document.getElementById('themeToggle').textContent='🌙 Dark'}
 </script></body></html>
